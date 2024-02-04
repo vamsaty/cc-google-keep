@@ -1,0 +1,20 @@
+{
+  "server_config": {
+    "hostname": "",
+    "port": 8099
+  },
+  "doc_db_config": {
+    "url": "mongodb://localhost:27017/admin",
+    "database_name": "google_note_db",
+    "collection_name": "note_collection",
+    "prev_secrets_path": "configs/mongo_credentials.json",
+    "secrets_path": "/tmp/mongo_creds.json"
+  },
+  "auth_db_config": {
+    "url": "mongodb://localhost:27017/admin",
+    "database_name": "auth_db_v0",
+    "collection_name": "auth",
+    "prev_secrets_path": "configs/mongo_credentials.json",
+    "secrets_path": "/tmp/mongo_creds.json"
+  }
+}
