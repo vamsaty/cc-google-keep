@@ -1,4 +1,4 @@
 
-bin
-front-end/.next
-front-end/node_modules
+./bin
+./front-end/.next
+./front-end/node_modules
