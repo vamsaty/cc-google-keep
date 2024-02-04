@@ -65,3 +65,6 @@ make force_run_all
 ## Flags
 TODO (vamsaty):  Update the flags used in the application
 Currently, there are no flags used in the application.
+
+## Issues
+the `front-end` directory is a blob (in github) and needs to be cleaned up.
