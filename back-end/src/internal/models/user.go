@@ -9,6 +9,8 @@
 
 package models
 
+import "time"
+
 type User struct {
 	// ID is the unique identifier for a user
 	ID string `json:"_id,omitempty" bson:"_id"`
@@ -18,4 +20,7 @@ type User struct {
 
 	// NoteIDs is a list of Note IDs which is stored/retrieved from Note repo
 	NoteIDs []string `json:"notes,omitempty" bson:"notes"`
+
+	// LastLoginAt is the time when the user last logged in
+	LastLoginAt time.Time `json:"last_login_at,omitempty" bson:"last_login_at"`
 }

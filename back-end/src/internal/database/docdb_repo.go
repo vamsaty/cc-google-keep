@@ -22,12 +22,19 @@ type NoteRepository interface {
 }
 
 // AuthRepository is an interface to be implemented by any repository that interacts with the
-// document database to create, update or delete user credentials
+// document database to create, update or delete user credentials.
+// This is supposed to be a session store
 type AuthRepository interface {
-	StoreUserCredentials(context.Context, models.UserSecret) error
+	CreateUserAccount(context.Context, models.UserSecret) error
 	FetchUserCredentials(context.Context, models.UserSecret) (models.UserSecret, error)
 	DeleteUser(context.Context, models.UserSecret) error
 	AllUserGuids(context.Context) []string
+}
+
+type UserRepository interface {
+	GetInfo(context.Context, string) (models.User, error)
+	CreateUserProfile(context.Context, string) (models.User, error)
+	UpdateLastLogin(context.Context, string) error
 }
 
 // initializeMongoDbClient creates a mongodb client using @config.AppConfig

@@ -34,8 +34,8 @@ run_all:
 
 stop_all:
 	docker stop $(MONGO_NAME) && docker rm $(MONGO_NAME) || true
-	kill -9 $$(lsof -i :8099 | awk '{print $$2}' | grep -v 'PID')
-	kill -9 $$(lsof -i :3000 | awk '{print $$2}' | grep -v 'PID')
+#	kill -9 $$(lsof -i :8099 | awk '{print $$2}' | grep -v 'PID')
+#	kill -9 $$(lsof -i :3000 | awk '{print $$2}' | grep -v 'PID')
 
 
 force_run_all:

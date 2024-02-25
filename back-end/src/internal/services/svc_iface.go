@@ -16,3 +16,7 @@ type NoteIface interface {
 	GetAllNotes(*gin.Context)
 	GetNote(*gin.Context)
 }
+
+type UserIface interface {
+	Info(ctx *gin.Context)
+}

@@ -26,8 +26,8 @@ func (ar *docDBAuthRepository) coll() *mongo.Collection {
 	return ar.mongoDbClient.Collection
 }
 
-// StoreUserCredentials stores the user credentials to DB
-func (ar *docDBAuthRepository) StoreUserCredentials(ctx context.Context, creds models.UserSecret) error {
+// CreateUserAccount stores the user credentials to DB
+func (ar *docDBAuthRepository) CreateUserAccount(ctx context.Context, creds models.UserSecret) error {
 	var err error
 	var secret models.UserSecret
 
@@ -42,6 +42,7 @@ func (ar *docDBAuthRepository) StoreUserCredentials(ctx context.Context, creds m
 	// update username and password
 	pwd := utils.SimpleHash(creds.Password)
 	_, err = ar.coll().InsertOne(ctx, models.NewUserSecret(creds.Username, pwd))
+
 	return err
 }
 

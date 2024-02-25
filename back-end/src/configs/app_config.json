@@ -16,5 +16,12 @@
     "collection_name": "auth",
     "prev_secrets_path": "configs/mongo_credentials.json",
     "secrets_path": "/tmp/mongo_creds.json"
+  },
+  "user_db_config": {
+    "url": "mongodb://localhost:27017/admin",
+    "database_name": "user_db_v0",
+    "collection_name": "user_collection",
+    "prev_secrets_path": "configs/mongo_credentials.json",
+    "secrets_path": "/tmp/mongo_creds.json"
   }
 }

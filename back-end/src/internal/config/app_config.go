@@ -33,6 +33,7 @@ func (hc *HttpConfig) Address() string {
 type AppConfig struct {
 	DocDBConfig  MongoDBConfig `json:"doc_db_config"`
 	AuthDBConfig MongoDBConfig `json:"auth_db_config"`
+	UserDBConfig MongoDBConfig `json:"user_db_config"`
 	ServerConfig HttpConfig    `json:"server_config"`
 }
 
@@ -54,6 +55,13 @@ func (ac *AppConfig) Sample() string {
 				"url": "mongodb://localhost:27017/admin",
 				"database_name": "auth_db_v0",
 				"collection_name": "auth",
+				"prev_secrets_path": "configs/mongo_credentials.json",
+				"secrets_path": "/tmp/mongo_creds.json"
+			},
+			"user_db_config": {
+				"url": "mongodb://localhost:27017/admin",
+				"database_name": "user_db_v0",
+				"collection_name": "user_collection",
 				"prev_secrets_path": "configs/mongo_credentials.json",
 				"secrets_path": "/tmp/mongo_creds.json"
 			}

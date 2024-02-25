@@ -25,7 +25,7 @@ func (gn *GNoteService) GetNote(ctx *gin.Context) {
 	if err != nil {
 		ctx.AbortWithStatusJSON(
 			http.StatusInternalServerError,
-			models.Error{Message: err.Error()},
+			ErrorMessageWithErr("", err),
 		)
 	}
 	ctx.JSON(http.StatusOK, note)
@@ -40,10 +40,7 @@ func (gn *GNoteService) CreateNote(ctx *gin.Context) {
 	if user, err = CurrentUser(ctx); err != nil {
 		ctx.AbortWithStatusJSON(
 			http.StatusInternalServerError,
-			models.Error{
-				Code:    models.TokenParseFailed,
-				Message: err.Error(),
-			},
+			ErrorMessageWithErr("", err),
 		)
 		return
 	}
@@ -58,10 +55,7 @@ func (gn *GNoteService) CreateNote(ctx *gin.Context) {
 		utils.Logger.Error("failed to bind request Note", zap.Error(err))
 		ctx.AbortWithStatusJSON(
 			http.StatusBadRequest,
-			models.Error{
-				Code:    models.InvalidInput,
-				Message: "failed to bind create note API input",
-			},
+			ErrorMessage("failed to bind create note API input"),
 		)
 		return
 	}
@@ -71,10 +65,8 @@ func (gn *GNoteService) CreateNote(ctx *gin.Context) {
 		utils.Logger.Error("Invalid request Note provided", zap.Error(err))
 		ctx.AbortWithStatusJSON(
 			http.StatusBadRequest,
-			models.Error{
-				Code:    models.InvalidInput,
-				Message: "Invalid payload received",
-			})
+			ErrorMessage("Invalid payload received"),
+		)
 		return
 	}
 
@@ -101,9 +93,7 @@ func (gn *GNoteService) UpdateNote(ctx *gin.Context) {
 		utils.Logger.Error("failed to bind request Note", zap.Error(err))
 		ctx.AbortWithStatusJSON(
 			http.StatusBadRequest,
-			models.Error{
-				Message: "failed to bind update note API input",
-			},
+			ErrorMessage("failed to bind update note API input"),
 		)
 		return
 	}
@@ -113,9 +103,7 @@ func (gn *GNoteService) UpdateNote(ctx *gin.Context) {
 		utils.Logger.Error("failed to get Note", zap.Error(err))
 		ctx.AbortWithStatusJSON(
 			http.StatusInternalServerError,
-			models.Error{
-				Message: "failed to fetch note to update",
-			},
+			ErrorMessage("failed to fetch note to update"),
 		)
 		return
 	}
@@ -127,9 +115,7 @@ func (gn *GNoteService) UpdateNote(ctx *gin.Context) {
 		utils.Logger.Error("failed to update Note")
 		ctx.AbortWithStatusJSON(
 			http.StatusInternalServerError,
-			models.Error{
-				Message: "failed to update Note. Error " + err.Error(),
-			},
+			ErrorMessageWithErr("failed to update Note", err),
 		)
 		return
 	}
@@ -145,17 +131,13 @@ func (gn *GNoteService) GetAllNotes(ctx *gin.Context) {
 	if user, err = CurrentUser(ctx); err != nil {
 		return
 	}
-	utils.Logger.Info("current_user", zap.String("name", user.Username))
 
 	notes, err := gn.Repo.GetAllNotes(ctx, user.ID)
 	if err != nil {
 		utils.Logger.Info("failed to fetch all notes")
 		ctx.AbortWithStatusJSON(
 			http.StatusInternalServerError,
-			models.Error{
-				Code:    models.RepoFetchFailed,
-				Message: err.Error(),
-			},
+			ErrorMessageWithErr("", err),
 		)
 	}
 	ctx.JSON(http.StatusOK, &notes)

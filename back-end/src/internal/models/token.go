@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+const (
+	kTokenAge = 10 * time.Minute
+)
+
 // AuthJwtToken is a struct that holds the jwt token and the bearer token
 type AuthJwtToken struct {
 	BearerToken string `json:"bearer_token"`
@@ -19,7 +23,7 @@ type AuthJwtToken struct {
 func NewAuthJwtToken(secret UserSecret) (AuthJwtToken, error) {
 	var err error
 	var tok AuthJwtToken
-	tok.JwtToken = secret.CreateJWT(10 * time.Minute)
+	tok.JwtToken = secret.CreateJWT(kTokenAge)
 	tok.BearerToken, err = tok.JwtToken.SignedString(utils.GetAPISecretBytes())
 	return tok, err
 }

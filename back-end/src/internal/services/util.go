@@ -9,6 +9,14 @@ import (
 	"src/pkg/utils"
 )
 
+func ErrorMessage(msg string) models.Error {
+	return models.Error{Message: msg}
+}
+
+func ErrorMessageWithErr(msg string, err error) models.Error {
+	return models.Error{Message: msg + ". Error: " + err.Error()}
+}
+
 func handleAuthError(c *gin.Context, err models.Error) {
 	c.Header("WWW-Authenticate", "Bearer")
 	c.AbortWithStatusJSON(http.StatusUnauthorized, err)
@@ -23,10 +31,7 @@ func CurrentUser(ctx *gin.Context) (models.User, error) {
 		utils.Logger.Info("failed to extract auth token")
 		ctx.AbortWithStatusJSON(
 			http.StatusInternalServerError,
-			models.Error{
-				Code:    models.TokenParseFailed,
-				Message: err.Error(),
-			},
+			ErrorMessageWithErr("", err),
 		)
 		return user, err
 	}
@@ -36,33 +41,34 @@ func CurrentUser(ctx *gin.Context) (models.User, error) {
 		utils.Logger.Info("failed to parse KWT token")
 		ctx.AbortWithStatusJSON(
 			http.StatusInternalServerError,
-			models.Error{
-				Code:    models.TokenParseFailed,
-				Message: err.Error(),
-			},
+			ErrorMessageWithErr("", err),
 		)
 		return user, err
 	}
+
 	// current username
 	claims := jwtTok.Claims.(jwt.MapClaims)
 	user = models.User{
 		ID:       claims["username"].(string),
 		Username: claims["username"].(string),
 	}
+	utils.Logger.Info("current-User-found-here")
 	return user, nil
 }
 
 func currentUserHandler(c *gin.Context) *models.User {
 	// fetch the current user from context (token)
-	if user, err := CurrentUser(c); err != nil {
+	var user models.User
+	var err error
+	if user, err = CurrentUser(c); err != nil {
 		utils.Logger.Error("failed to extract user from token", zap.Error(err))
 		c.AbortWithStatusJSON(
 			http.StatusBadRequest,
-			models.Error{Message: "failed to extract user from token. Error: " + err.Error()},
+			ErrorMessageWithErr("failed to extract user from token", err),
 		)
-		return &user
+		return nil
 	}
-	return nil
+	return &user
 }
 
 func jwtTokenHandler(c *gin.Context, dbCreds models.UserSecret) *models.AuthJwtToken {
@@ -71,7 +77,7 @@ func jwtTokenHandler(c *gin.Context, dbCreds models.UserSecret) *models.AuthJwtT
 		utils.Logger.Error("failed to generate token", zap.Error(err))
 		c.AbortWithStatusJSON(
 			http.StatusInternalServerError,
-			models.Error{Message: "failed to generate token. Error: " + err.Error()},
+			ErrorMessageWithErr("failed to generate token", err),
 		)
 		return nil
 	}

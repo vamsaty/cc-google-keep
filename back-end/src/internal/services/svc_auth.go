@@ -12,9 +12,10 @@ import (
 
 type ErrorHandlerFunc func(*gin.Context, error, int)
 
-// AuthService is a service that handles the authentication of users
+// AuthService handles the authentication of users (user account)
 type AuthService struct {
-	repo database.AuthRepository
+	repo     database.AuthRepository
+	userRepo database.UserRepository
 }
 
 // AllUserGuids fetches the list of all the user guids in the DB
@@ -33,7 +34,7 @@ func (asv *AuthService) Login(c *gin.Context) {
 		utils.Logger.Error("failed to bind request", zap.Error(err))
 		c.AbortWithStatusJSON(
 			http.StatusBadRequest,
-			models.Error{Message: "failed to bind request. Error: " + err.Error()},
+			ErrorMessageWithErr("failed to bind request", err),
 		)
 		return
 	}
@@ -43,7 +44,7 @@ func (asv *AuthService) Login(c *gin.Context) {
 		utils.Logger.Error("failed to login", zap.Error(err))
 		c.AbortWithStatusJSON(
 			http.StatusNotFound,
-			models.Error{Message: "failed to login. Error: " + err.Error()},
+			ErrorMessageWithErr("failed to login", err),
 		)
 		return
 	}
@@ -53,7 +54,7 @@ func (asv *AuthService) Login(c *gin.Context) {
 		utils.Logger.Error("incorrect username/password")
 		c.AbortWithStatusJSON(
 			http.StatusUnauthorized,
-			models.Error{Message: "incorrect username/password"},
+			ErrorMessage("incorrect credentials"),
 		)
 		return
 	}
@@ -61,6 +62,16 @@ func (asv *AuthService) Login(c *gin.Context) {
 	// create a JWT token
 	token := jwtTokenHandler(c, dbCreds)
 	if token == nil {
+		return
+	}
+
+	// update last login
+	if err = asv.userRepo.UpdateLastLogin(c, dbCreds.Username); err != nil {
+		utils.Logger.Error("user profile update failed.", zap.Error(err))
+		c.AbortWithStatusJSON(
+			http.StatusInternalServerError,
+			ErrorMessageWithErr("last login update failed", err),
+		)
 		return
 	}
 
@@ -80,22 +91,31 @@ func (asv *AuthService) Register(c *gin.Context) {
 		utils.Logger.Error("failed to bind register request", zap.Error(err))
 		c.AbortWithStatusJSON(
 			http.StatusBadRequest,
-			models.Error{Message: "failed to bind. Error: " + err.Error()},
+			ErrorMessageWithErr("failed to bin", err),
 		)
 		return
 	}
 
 	// Store the username and password in DB
 	secrets.ID = secrets.Username
-	if err = asv.repo.StoreUserCredentials(c, secrets); err != nil {
+	if err = asv.repo.CreateUserAccount(c, secrets); err != nil {
 		utils.Logger.Error("failed to store the user credentials", zap.Error(err))
 		c.AbortWithStatusJSON(
 			http.StatusInternalServerError,
-			models.Error{Message: "failed to create user/password. Error: " + err.Error()},
+			ErrorMessageWithErr("failed to create user", err),
 		)
 		return
 	}
 
+	// create the user profile
+	if _, err = asv.userRepo.CreateUserProfile(c, secrets.ID); err != nil {
+		utils.Logger.Error("failed to create user profile", zap.Error(err))
+		c.AbortWithStatusJSON(
+			http.StatusInternalServerError,
+			ErrorMessageWithErr("failed to create user profile", err),
+		)
+		return
+	}
 	c.String(http.StatusOK, "Created user successfully")
 }
 
@@ -139,5 +159,13 @@ func NewAuthService(cfg *config.AppConfig) AuthIface {
 		utils.Logger.Fatal("failed to get auth repository", zap.Error(err))
 		panic(err)
 	}
-	return &AuthService{repo: repo}
+
+	userRepo, err := database.NewUserRepository(cfg)
+	if err != nil {
+		utils.Logger.Fatal("failed to get user repository for AuthService")
+	}
+	return &AuthService{
+		repo:     repo,
+		userRepo: userRepo,
+	}
 }
